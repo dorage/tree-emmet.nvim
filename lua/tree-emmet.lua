@@ -1,3 +1,5 @@
+local ts_utils = require("nvim-treesitter.ts_utils")
+
 -- main module file
 local module = require("tree-emmet.module")
 
@@ -43,20 +45,7 @@ end
 
 -- Balance
 -- https://docs.emmet.io/actions/match-pair/
---
--- find closest element node
--- if, there is an element node among the parent nodes
--- elseif, there is an element node starting from the next sibling of the child node of root node that contains the element node
--- else, not found, print 'cannot find element node'
---
--- get a node for range
--- if inward,
---  if, the node is self closing tag, return nil
---  else, return 2nd child of the element node
--- elseif outward,
---	return the element node
---
--- select range of node
+
 M.balance_inward = function()
   local curr_node = vim.treesitter.get_node()
   if curr_node == nil then
@@ -70,20 +59,22 @@ M.balance_inward = function()
   end
 
   -- get a node for range
-  local element_inward_node = element_node:child(1)
-  if
-    element_inward_node == nil
-    or element_inward_node:type() == "jsx_openeing_element"
-    or element_inward_node:type() == "jsx_closing_element"
-  then
+  if element_node:child(1):type() == "jsx_closing_element" then
     return nil
   end
+  local first_child = element_node:child(1)
+  local last_child = element_node:child(element_node:child_count() - 2)
+
+  -- refer to update_selection() in vim.treesitter.ts_utils
+  local start_row, start_col, _, _ = ts_utils.get_vim_range({ vim.treesitter.get_node_range(first_child) }, 0)
+  local _, _, end_row, end_col = ts_utils.get_vim_range({ vim.treesitter.get_node_range(last_child) }, 0)
 
   -- select range of node
-  local start_row, start_col, end_row, end_col = element_inward_node:range(false)
-  vim.api.nvim_win_set_cursor(0, { start_row + 1, start_col })
   vim.cmd("normal! v")
-  vim.api.nvim_win_set_cursor(0, { end_row + 1, end_col - 1 })
+  vim.api.nvim_win_set_cursor(0, { start_row, start_col - 1 })
+  vim.cmd("normal! o")
+  vim.api.nvim_win_set_cursor(0, { end_row, end_col - 1 })
+
   return start_row, start_col, end_row, end_col
 end
 M.balance_outward = function()
@@ -100,9 +91,10 @@ M.balance_outward = function()
 
   -- select range of node
   local start_row, start_col, end_row, end_col = element_node:range(false)
-  vim.api.nvim_win_set_cursor(0, { start_row + 1, start_col })
-  vim.cmd("normal! v")
-  vim.api.nvim_win_set_cursor(0, { end_row + 1, end_col - 1 })
+  require("nvim-treesitter.ts_utils").update_selection(0, element_node)
+  -- vim.api.nvim_win_set_cursor(0, { start_row + 1, start_col })
+  -- vim.cmd("normal! v")
+  -- vim.api.nvim_win_set_cursor(0, { end_row + 1, end_col - 1 })
   return start_row, start_col, end_row, end_col
 end
 

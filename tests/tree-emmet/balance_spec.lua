@@ -1,4 +1,5 @@
 local plugin = require("tree-emmet")
+local str = require("tree-emmet.string")
 
 ---move to search position, yank it
 ---@param search string
@@ -18,7 +19,7 @@ end
 
 describe("balance inward in tsx", function()
   before_each(function()
-    vim.cmd("edit tests/sources/tsx.tsx")
+    vim.cmd("edit tests/sources/balance.tsx")
   end)
 
   after_each(function()
@@ -32,21 +33,34 @@ describe("balance inward in tsx", function()
     local res, reg = move_and_yank("element_with_text_content", plugin.balance_inward)
 
     assert.not_nil(res)
-    assert.are_equal(reg, "lorem ipsum")
+    assert.are_equal("lorem ipsum", reg)
   end)
 
   it("returns expression on an element with js expression", function()
     local res, reg = move_and_yank("element_with_js_expr", plugin.balance_inward)
 
     assert.not_nil(res)
-    assert.are_equal(reg, "{2}")
+    assert.are_equal("{2}", reg)
   end)
 
-  it("returns expression on an nested element", function()
+  it("returns expression on an element containing an element", function()
     local res, reg = move_and_yank("element_nested", plugin.balance_inward)
 
     assert.not_nil(res)
-    assert.are_equal(reg, "<div></div>")
+    assert.are_equal("1234", str.trim(reg))
+  end)
+
+  it("returns expression on an element containing multiple elements", function()
+    local res, reg = move_and_yank("element_nested_multiple", plugin.balance_inward)
+
+    assert.not_nil(res)
+    assert.are_equal(
+      [[1234
+        <div></div>
+        {1234}
+        1234]],
+      str.trim(reg)
+    )
   end)
 
   it("returns nil on an self closing element", function()
@@ -58,7 +72,7 @@ end)
 
 describe("balance outward in tsx", function()
   before_each(function()
-    vim.cmd("edit tests/sources/tsx.tsx")
+    vim.cmd("edit tests/sources/balance.tsx")
   end)
 
   after_each(function()
@@ -72,25 +86,40 @@ describe("balance outward in tsx", function()
     local res, reg = move_and_yank("element_with_text_content", plugin.balance_outward)
 
     assert.not_nil(res)
-    assert.are_equal(reg, '<div id="element_with_text_content">lorem ipsum</div>')
+    assert.are_equal('<div id="element_with_text_content">lorem ipsum</div>', reg)
   end)
 
   it("returns expression on an element with js expression", function()
     local res, reg = move_and_yank("element_with_js_expr", plugin.balance_outward)
 
     assert.not_nil(res)
-    assert.are_equal(reg, '<div id="element_with_js_expr">{2}</div>')
+    assert.are_equal('<div id="element_with_js_expr">{2}</div>', reg)
   end)
 
-  it("returns expression on an nested element", function()
+  it("returns expression on an element containing an element", function()
     local res, reg = move_and_yank("element_nested", plugin.balance_outward)
 
     assert.not_nil(res)
     assert.are_equal(
-      reg,
-      [[<div id="element_nested">
+      [[<div id="element_nested" class="make_new_line">
+        1234
+      </div>]],
+      reg
+    )
+  end)
+
+  it("returns expression on an element containing multiple elements", function()
+    local res, reg = move_and_yank("element_nested_multiple", plugin.balance_outward)
+
+    assert.not_nil(res)
+    assert.are_equal(
+      [[<div id="element_nested_multiple">
+        1234
         <div></div>
-      </div>]]
+        {1234}
+        1234
+      </div>]],
+      reg
     )
   end)
 
@@ -98,6 +127,6 @@ describe("balance outward in tsx", function()
     local res, reg = move_and_yank("element_self_closed", plugin.balance_outward)
 
     assert.not_nil(res)
-    assert.are_equal(reg, '<div id="element_self_closed" />')
+    assert.are_equal('<div id="element_self_closed" />', reg)
   end)
 end)
