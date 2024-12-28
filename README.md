@@ -6,7 +6,9 @@ re-implemenation of emmet for neovim with Tree-sitter
 
 ### Basic Actions
 - [ ] Expand Abbreviation
-- [ ] Balance
+- [-] Balance
+    - [v] jsx
+    - [ ] html
 - [ ] Go to Matching Pair
 - [ ] Wrap with Abbreviation
 - [ ] Go to Edit Point
