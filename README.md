@@ -18,7 +18,9 @@ re-implemenation of emmet for neovim with Tree-sitter
 - [ ] Toggle Comment
 - [ ] Split/Join Tag
 - [ ] Remove Tag
-- [ ] Merge Lines
+- [-] Merge Lines
+    - [v] jsx
+    - [ ] html
 - [ ] Update Image Size
 - [ ] Evaluate Math Expression
 - [ ] Increment/Decrement Number

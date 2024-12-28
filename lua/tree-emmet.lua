@@ -1,4 +1,4 @@
-local ts_utils = require("nvim-treesitter.ts_utils")
+local str = require("tree-emmet.string")
 
 -- main module file
 local module = require("tree-emmet.module")
@@ -114,8 +114,27 @@ M.join_tag = function() end
 -- https://docs.emmet.io/actions/remove-tag/
 M.remove_tag = function() end
 
+-- Merge Lines
 -- https://docs.emmet.io/actions/merge-lines/
-M.merge_line = function() end
+
+M.merge_line = function()
+  local element_node = module.get_element_node()
+  if element_node == nil then
+    return
+  end
+  local start_row, start_col, end_row, end_col = element_node:range()
+
+  if start_row == end_row then
+    return
+  end
+
+  local lines = vim.api.nvim_buf_get_lines(0, start_row, end_row + 1, false)
+  table.foreach(lines, function(key, value)
+    lines[key] = str.trim(value)
+  end)
+  local new_line = table.concat(lines, "")
+  vim.api.nvim_buf_set_lines(0, start_row + 1, end_row + 1, false, { new_line })
+end
 
 -- https://docs.emmet.io/actions/update-image-size/
 M.update_image_size = function() end
