@@ -82,21 +82,21 @@ describe("balance outward in tsx", function()
     vim.cmd("bd")
   end)
 
-  it("returns text on an element with text content", function()
+  it("returns an element on an element with text content", function()
     local res, reg = move_and_yank("element_with_text_content", plugin.balance_outward)
 
     assert.not_nil(res)
     assert.are_equal('<div id="element_with_text_content">lorem ipsum</div>', reg)
   end)
 
-  it("returns expression on an element with js expression", function()
+  it("returns an element on an element with js expression", function()
     local res, reg = move_and_yank("element_with_js_expr", plugin.balance_outward)
 
     assert.not_nil(res)
     assert.are_equal('<div id="element_with_js_expr">{2}</div>', reg)
   end)
 
-  it("returns expression on an element containing an element", function()
+  it("returns an element on an element containing an element", function()
     local res, reg = move_and_yank("element_nested", plugin.balance_outward)
 
     assert.not_nil(res)
@@ -108,7 +108,7 @@ describe("balance outward in tsx", function()
     )
   end)
 
-  it("returns expression on an element containing multiple elements", function()
+  it("returns an element on an element containing multiple elements", function()
     local res, reg = move_and_yank("element_nested_multiple", plugin.balance_outward)
 
     assert.not_nil(res)
@@ -123,7 +123,7 @@ describe("balance outward in tsx", function()
     )
   end)
 
-  it("returns nil on an self closing element", function()
+  it("returns an element on an self closing element", function()
     local res, reg = move_and_yank("element_self_closed", plugin.balance_outward)
 
     assert.not_nil(res)

@@ -5,9 +5,7 @@ local module = require("tree-emmet.module")
 
 ---@class Config
 ---@field opt string Your config option
-local config = {
-  opt = "Hello!",
-}
+local config = {}
 
 ---@class MyModule
 local M = {}
@@ -24,50 +22,15 @@ end
 
 M.expand_abbreviation = function() end
 
---- find element node
---- @param node TSNode
---- @return TSNode|nil
-local function find_element_node(node)
-  local cursor = node
-  while true do
-    if cursor:type() == "jsx_element" or cursor:type() == "jsx_self_closing_element" then
-      return cursor
-    end
-
-    local parent = cursor:parent()
-    if parent == nil then
-      return nil
-    end
-
-    cursor = parent
-  end
-end
-
 -- Balance
 -- https://docs.emmet.io/actions/match-pair/
 
 M.balance_inward = function()
-  local curr_node = vim.treesitter.get_node()
-  if curr_node == nil then
+  local range = module.get_range_within_element()
+  if range == nil then
     return nil
   end
-
-  -- find closest element node
-  local element_node = find_element_node(curr_node)
-  if element_node == nil or element_node:type() == "jsx_self_closing_element" then
-    return nil
-  end
-
-  -- get a node for range
-  if element_node:child(1):type() == "jsx_closing_element" then
-    return nil
-  end
-  local first_child = element_node:child(1)
-  local last_child = element_node:child(element_node:child_count() - 2)
-
-  -- refer to update_selection() in vim.treesitter.ts_utils
-  local start_row, start_col, _, _ = ts_utils.get_vim_range({ vim.treesitter.get_node_range(first_child) }, 0)
-  local _, _, end_row, end_col = ts_utils.get_vim_range({ vim.treesitter.get_node_range(last_child) }, 0)
+  local start_row, start_col, end_row, end_col = unpack(range)
 
   -- select range of node
   vim.cmd("normal! v")
@@ -77,24 +40,16 @@ M.balance_inward = function()
 
   return start_row, start_col, end_row, end_col
 end
-M.balance_outward = function()
-  local curr_node = vim.treesitter.get_node()
-  if curr_node == nil then
-    return nil
-  end
 
-  -- find closest element node
-  local element_node = find_element_node(curr_node)
+M.balance_outward = function()
+  local element_node = module.get_element_node()
   if element_node == nil then
     return nil
   end
 
-  -- select range of node
-  local start_row, start_col, end_row, end_col = element_node:range(false)
+  local start_row, start_col, end_row, end_col = element_node:range()
+
   require("nvim-treesitter.ts_utils").update_selection(0, element_node)
-  -- vim.api.nvim_win_set_cursor(0, { start_row + 1, start_col })
-  -- vim.cmd("normal! v")
-  -- vim.api.nvim_win_set_cursor(0, { end_row + 1, end_col - 1 })
   return start_row, start_col, end_row, end_col
 end
 
@@ -110,12 +65,7 @@ end
 
 -- move cursor to the matching pair
 M.go_to_matching_pair = function()
-  local curr_node = vim.treesitter.get_node()
-  if curr_node == nil then
-    return nil
-  end
-
-  local element_node = find_element_node(curr_node)
+  local element_node = module.get_element_node()
   if element_node == nil then
     return nil
   end
@@ -142,6 +92,8 @@ M.go_to_matching_pair = function()
     and col <= closing_end_col - 1
   then
     vim.api.nvim_win_set_cursor(0, { opening_start_row + 1, opening_start_col + 1 })
+  else
+    return nil
   end
 
   return vim.api.nvim_win_get_cursor(0)
