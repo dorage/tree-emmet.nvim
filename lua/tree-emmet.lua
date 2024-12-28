@@ -55,15 +55,7 @@ end
 
 -- Go to Matching Pair
 -- https://docs.emmet.io/actions/go-to-pair/
---
--- find closest element node
--- if, there is an element node among the parent nodes
--- else, return ull
 
--- get opening tag node(1st), closing tag node(3rd)
--- find out which node the current cursor is on
-
--- move cursor to the matching pair
 M.go_to_matching_pair = function()
   local element_node = module.get_element_node()
   if element_node == nil then
