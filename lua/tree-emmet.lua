@@ -1,5 +1,5 @@
 -- main module file
-local module = require("plugin_name.module")
+local module = require("tree-emmet.module")
 
 ---@class Config
 ---@field opt string Your config option
@@ -20,8 +20,138 @@ M.setup = function(args)
   M.config = vim.tbl_deep_extend("force", M.config, args or {})
 end
 
-M.hello = function()
-  return module.my_first_function(M.config.opt)
+M.expand_abbreviation = function() end
+
+--- find element node
+--- @param node TSNode
+--- @return TSNode|nil
+local function find_element_node(node)
+  local cursor = node
+  while true do
+    if cursor:type() == "jsx_element" or cursor:type() == "jsx_self_closing_element" then
+      return cursor
+    end
+
+    local parent = cursor:parent()
+    if parent == nil then
+      return nil
+    end
+
+    cursor = parent
+  end
 end
+
+-- Balance
+-- https://docs.emmet.io/actions/match-pair/
+--
+-- find closest element node
+-- if, there is an element node among the parent nodes
+-- elseif, there is an element node starting from the next sibling of the child node of root node that contains the element node
+-- else, not found, print 'cannot find element node'
+--
+-- get a node for range
+-- if inward,
+--  if, the node is self closing tag, return nil
+--  else, return 2nd child of the element node
+-- elseif outward,
+--	return the element node
+--
+-- select range of node
+M.balance_inward = function()
+  local curr_node = vim.treesitter.get_node()
+  if curr_node == nil then
+    return nil
+  end
+
+  -- find closest element node
+  local element_node = find_element_node(curr_node)
+  if element_node == nil or element_node:type() == "jsx_self_closing_element" then
+    return nil
+  end
+
+  -- get a node for range
+  local element_inward_node = element_node:child(1)
+  if
+    element_inward_node == nil
+    or element_inward_node:type() == "jsx_openeing_element"
+    or element_inward_node:type() == "jsx_closing_element"
+  then
+    return nil
+  end
+
+  -- select range of node
+  local start_row, start_col, end_row, end_col = element_inward_node:range(false)
+  vim.api.nvim_win_set_cursor(0, { start_row + 1, start_col })
+  vim.cmd("normal! v")
+  vim.api.nvim_win_set_cursor(0, { end_row + 1, end_col - 1 })
+  return start_row, start_col, end_row, end_col
+end
+
+M.balance_outward = function()
+  local curr_node = vim.treesitter.get_node()
+  if curr_node == nil then
+    return nil
+  end
+
+  -- find closest element node
+  local element_node = find_element_node(curr_node)
+  if element_node == nil then
+    return nil
+  end
+
+  -- select range of node
+  local start_row, start_col, end_row, end_col = element_node:range(false)
+  vim.api.nvim_win_set_cursor(0, { start_row + 1, start_col })
+  vim.cmd("normal! v")
+  vim.api.nvim_win_set_cursor(0, { end_row + 1, end_col - 1 })
+  return start_row, start_col, end_row, end_col
+end
+
+M.go_to_matching_pair = function()
+
+  -- find closest element node
+  -- if, there is an element node among the parent nodes
+  -- else, return ull
+
+  -- get opening tag node(1st), closing tag node(3rd)
+  -- find out which node the current cursor is on
+
+  -- move cursor to the matching pair
+end
+
+M.wrap_with_abbreviation = function() end
+
+-- https://docs.emmet.io/actions/go-to-edit-point/
+M.go_to_edit_point = function()
+  -- between tags
+  -- empty attributes
+  -- newlines with indentation
+end
+
+-- https://docs.emmet.io/actions/select-item/
+M.select_item = function() end
+
+-- https://docs.emmet.io/actions/toggle-comment/
+M.toggle_comment = function() end
+
+-- https://docs.emmet.io/actions/split-join-tag/
+M.split_tag = function() end
+M.join_tag = function() end
+
+-- https://docs.emmet.io/actions/remove-tag/
+M.remove_tag = function() end
+
+-- https://docs.emmet.io/actions/merge-lines/
+M.merge_line = function() end
+
+-- https://docs.emmet.io/actions/update-image-size/
+M.update_image_size = function() end
+
+-- https://docs.emmet.io/actions/evaluate-math/
+M.evaluate_math = function() end
+
+--https://docs.emmet.io/actions/base64/
+M.encode_image = function() end
+M.decode_image = function() end
 
 return M

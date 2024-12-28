@@ -7,14 +7,17 @@ const Compose = { Child };
 export const Element = () => {
   return (
     <>
-      <div className="asdf" id="asdf" onClick={() => {}}>
-        asdf
+      {/* inward test */}
+      <div id="element_blank"></div>
+      <div id="element_with_text_content">lorem ipsum</div>
+      <div id="element_with_js_expr">{2}</div>
+      <div id="element_self_closed" />
+      <div id="element_nested">
+        <div></div>
       </div>
-      <div>{1234}</div>
-      <div />
-      <div style={{ width: "10px" }}></div>
-      <Compose.Child>asdf</Compose.Child>
-      <Compose.Child />
+      <Compose.Child id="component_with_text_content">asdf</Compose.Child>
+      <Compose.Child id="component_with_js_expr">{123456789}</Compose.Child>
+      <Compose.Child id="component_self_closed" />
     </>
   );
 };
