@@ -9,7 +9,9 @@ re-implemenation of emmet for neovim with Tree-sitter
 - [-] Balance
     - [v] jsx
     - [ ] html
-- [ ] Go to Matching Pair
+- [-] Go to Matching Pair
+    - [v] jsx
+    - [ ] html
 - [ ] Wrap with Abbreviation
 - [ ] Go to Edit Point
 - [ ] Select Item
