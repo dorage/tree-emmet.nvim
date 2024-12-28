@@ -86,7 +86,6 @@ M.balance_inward = function()
   vim.api.nvim_win_set_cursor(0, { end_row + 1, end_col - 1 })
   return start_row, start_col, end_row, end_col
 end
-
 M.balance_outward = function()
   local curr_node = vim.treesitter.get_node()
   if curr_node == nil then
@@ -107,18 +106,56 @@ M.balance_outward = function()
   return start_row, start_col, end_row, end_col
 end
 
+-- Go to Matching Pair
+-- https://docs.emmet.io/actions/go-to-pair/
+--
+-- find closest element node
+-- if, there is an element node among the parent nodes
+-- else, return ull
+
+-- get opening tag node(1st), closing tag node(3rd)
+-- find out which node the current cursor is on
+
+-- move cursor to the matching pair
 M.go_to_matching_pair = function()
+  local curr_node = vim.treesitter.get_node()
+  if curr_node == nil then
+    return nil
+  end
 
-  -- find closest element node
-  -- if, there is an element node among the parent nodes
-  -- else, return ull
+  local element_node = find_element_node(curr_node)
+  if element_node == nil then
+    return nil
+  end
+  if element_node:type() == "jsx_self_closing_element" then
+    return nil
+  end
 
-  -- get opening tag node(1st), closing tag node(3rd)
-  -- find out which node the current cursor is on
+  local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+  local opening_start_row, opening_start_col, opening_end_row, opening_end_col = element_node:child(0):range()
+  local closing_start_row, closing_start_col, closing_end_row, closing_end_col =
+    element_node:child(element_node:child_count() - 1):range()
 
-  -- move cursor to the matching pair
+  if -- if the cursor was on the opening tag
+    row >= opening_start_row + 1
+    and row <= opening_end_row + 1
+    and col >= opening_start_col
+    and col <= opening_end_col - 1
+  then
+    vim.api.nvim_win_set_cursor(0, { closing_start_row + 1, closing_start_col + 1 })
+  elseif -- elseif cursor was on the closing tag
+    row >= closing_start_row + 1
+    and row <= closing_end_row + 1
+    and col >= closing_start_col
+    and col <= closing_end_col - 1
+  then
+    vim.api.nvim_win_set_cursor(0, { opening_start_row + 1, opening_start_col + 1 })
+  end
+
+  return vim.api.nvim_win_get_cursor(0)
 end
 
+-- Wrap with abbreviation
 M.wrap_with_abbreviation = function() end
 
 -- https://docs.emmet.io/actions/go-to-edit-point/
