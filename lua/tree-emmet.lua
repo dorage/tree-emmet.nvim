@@ -104,12 +104,55 @@ end
 -- https://docs.emmet.io/actions/select-item/
 M.select_item = function() end
 
+-- Toggle Comment
 -- https://docs.emmet.io/actions/toggle-comment/
-M.toggle_comment = function() end
 
+M.toggle_comment = function()
+  local element_node = module.get_element_node()
+  if element_node == nil then
+    return
+  end
+
+  -- TODO:
+  -- 코메트 블럭의 코멘트를 해제
+  -- 코멘트 블럭 내부를 파싱해서 element인지 확인하고 맞다면 해제
+  -- local parser = vim.treesitter.get_parser()
+  -- parser.parse()
+
+  local start_row, start_col, end_row, end_col = element_node:range()
+
+  local lines = vim.api.nvim_buf_get_lines(0, start_row, end_row + 1, false)
+  print(vim.inspect(lines))
+
+  -- opening comment block
+  lines[1] = string.sub(lines[1], 0, start_col) .. "{/*" .. string.sub(lines[1], start_col + 1)
+  -- closing comment block
+  lines[#lines] = string.sub(lines[#lines], 0, end_col + 1) .. "*/}" .. string.sub(lines[#lines], end_col + 1)
+
+  vim.api.nvim_buf_set_lines(0, start_row, end_row + 1, false, lines)
+end
+
+-- Split/Join Tag
 -- https://docs.emmet.io/actions/split-join-tag/
-M.split_tag = function() end
-M.join_tag = function() end
+--
+M.split_join_tag = function()
+  local element_node = module.get_element_node()
+  if element_node == nil then
+    return
+  end
+
+  if element_node:type() == "jsx_self_closing_element" then
+
+    -- split
+    -- remove /
+    -- add closing tag
+  elseif element_node:type() == "jsx_element" then
+
+    -- join
+    -- remove except opening element
+    -- add /
+  end
+end
 
 -- https://docs.emmet.io/actions/remove-tag/
 M.remove_tag = function() end
