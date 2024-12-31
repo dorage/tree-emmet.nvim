@@ -16,7 +16,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 
 ---return the closest ancestor node which has element type from a node
 --- @param node TSNode
---- @return TSNode|nil
+--- @return TSNode?
 local find_element_node = function(node)
   local cursor = node
   while true do
@@ -41,10 +41,11 @@ end
 local M = {}
 
 ---return the smallest node which has element type at the cursor position
----@return nil|TSNode
+---@return TSNode?
 M.get_element_node = function()
   local curr_node = vim.treesitter.get_node()
   if curr_node == nil then
+    debug("the cursor is not hovering any element node")
     return nil
   end
 
@@ -58,19 +59,55 @@ M.get_element_node = function()
 end
 
 ---comment
----@param node TSNode
-M.get_range_of_opening_element = function(element_node)
-  return
+---@param element_node TSNode
+---@return TSNode?
+M.get_opening_element = function(element_node)
+  if element_node:type() == "jsx_self_closing_element" then
+    debug("it is self closing element")
+    return
+  end
+
+  for i = 0, element_node:child_count() do
+    print(element_node:child(i):type())
+    if element_node:child(i):type() == "jsx_opening_element" then
+      return element_node:child(i)
+    end
+  end
+
+  return nil
 end
 
 ---comment
----@param node TSNode
-M.get_range_of_closing_element = function(element_node)
-  return
+---@param element_node TSNode
+---@return string?
+M.get_identifier = function(element_node)
+  local opening_element = M.get_opening_element(element_node)
+
+  -- if it is self closing element
+  if element_node:type() == "jsx_self_closing_element" then
+    opening_element = element_node
+  end
+
+  if opening_element == nil then
+    debug("cannot find opening element node or self closing element node")
+    return nil
+  end
+
+  local identifier_node = opening_element:child(1):child(1)
+
+  if identifier_node == nil then
+    debug("cannot find identifier node")
+    return nil
+  end
+
+  local start_row, start_col, end_row, end_col = identifier_node:range()
+  local line = vim.api.nvim_buf_get_lines(0, start_row, end_row + 1, false)[1]
+  local tagname = string.sub(line, start_col, end_col + 1)
+  return tagname
 end
 
 ---
----@return nil|Range
+---@return Range?
 M.get_range_within_element = function()
   -- find closest element node
   local element_node = M.get_element_node()

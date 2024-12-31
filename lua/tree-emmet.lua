@@ -122,7 +122,6 @@ M.toggle_comment = function()
   local start_row, start_col, end_row, end_col = element_node:range()
 
   local lines = vim.api.nvim_buf_get_lines(0, start_row, end_row + 1, false)
-  print(vim.inspect(lines))
 
   -- opening comment block
   lines[1] = string.sub(lines[1], 0, start_col) .. "{/*" .. string.sub(lines[1], start_col + 1)
@@ -136,15 +135,6 @@ end
 -- https://docs.emmet.io/actions/split-join-tag/
 --
 
----comment
----@param element_node TSNode
-local function get_tagname(element_node)
-  local start_row, start_col, end_row, end_col = element_node:child(1):child(1):range()
-  local line = vim.api.nvim_buf_get_lines(0, start_row, end_row + 1, false)[1]
-  local tagname = string.sub(line, start_col, end_col + 1)
-  return tagname
-end
-
 M.split_join_tag = function()
   local element_node = module.get_element_node()
   if element_node == nil then
@@ -153,8 +143,8 @@ M.split_join_tag = function()
 
   -- split
   if element_node:type() == "jsx_self_closing_element" then
-    local tagname = get_tagname(element_node)
-    local start_row, start_col, end_row, end_col = element_node:range()
+    local tagname = module.get_identifier(element_node)
+    local start_row, _, end_row, end_col = element_node:range()
     local lines = vim.api.nvim_buf_get_lines(0, start_row, end_row + 1, false)
     lines[#lines] = string.sub(lines[#lines], 0, end_col - 2):gsub("%s+$", "")
       .. "></"
@@ -165,11 +155,16 @@ M.split_join_tag = function()
     vim.api.nvim_buf_set_lines(0, start_row, end_row + 1, false, lines)
   -- join
   elseif element_node:type() == "jsx_element" then
-    local start_row, start_col, end_row, end_col = element_node:range()
+    local start_row, _, end_row, end_col = element_node:range()
     local lines = vim.api.nvim_buf_get_lines(0, start_row, end_row + 1, false)
 
     -- opening element range
-    local _, _, opening_end_row, opening_end_col = element_node:child(0):range()
+    local opening_element = module.get_opening_element(element_node)
+    if opening_element == nil then
+      return nil
+    end
+
+    local _, _, opening_end_row, opening_end_col = opening_element:range()
 
     local delete_start_row = opening_end_row - start_row + 1
     lines = str.remove_ranges(lines, {
