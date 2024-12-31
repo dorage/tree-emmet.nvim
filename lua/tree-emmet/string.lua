@@ -75,12 +75,10 @@ M.remove_ranges = function(lines, ranges)
   ---@type string[]
   local new_lines = {}
 
-  for curr_row, line in ipairs(results) do
+  for _, line in ipairs(results) do
     local new_line = table.concat(line, "")
-    if M.trim(new_line) == "" then
-      new_lines[curr_row] = nil
-    else
-      new_lines[curr_row] = new_line
+    if M.trim(new_line) ~= "" then
+      table.insert(new_lines, #new_lines + 1, new_line)
     end
   end
 
