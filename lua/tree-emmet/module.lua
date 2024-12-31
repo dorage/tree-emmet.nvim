@@ -78,6 +78,24 @@ end
 
 ---comment
 ---@param element_node TSNode
+---@return TSNode?
+M.get_closing_element = function(element_node)
+  if element_node:type() == "jsx_self_closing_element" then
+    debug("it is self closing element")
+    return
+  end
+
+  for i = 0, element_node:child_count() do
+    if element_node:child(i):type() == "jsx_closing_element" then
+      return element_node:child(i)
+    end
+  end
+
+  return nil
+end
+
+---comment
+---@param element_node TSNode
 ---@return string?
 M.get_identifier = function(element_node)
   local opening_element = M.get_opening_element(element_node)
