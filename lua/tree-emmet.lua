@@ -7,7 +7,7 @@ local module = require("tree-emmet.module")
 ---@field opt string Your config option
 local config = {}
 
----@class MyModule
+---@class TreeEmmet
 local M = {}
 
 ---@type Config
