@@ -40,8 +40,6 @@ M.remove_ranges = function(lines, ranges)
     local start_row, start_col, end_row, end_col = unpack(range)
 
     for curr_row, line in ipairs(results) do
-      local new_line = {}
-
       for curr_col = 1, #line do
         ---@type string
         local curr_char = line[curr_col]
@@ -69,9 +67,8 @@ M.remove_ranges = function(lines, ranges)
           char = ""
         end
 
-        new_line[curr_col] = char
+        results[curr_row][curr_col] = char
       end
-      results[curr_row] = new_line
     end
   end
 
