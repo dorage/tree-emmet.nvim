@@ -151,7 +151,6 @@ export const Element = () => {
 };]],
       "[^\n]+"
     )
-    print(vim.inspect(lines))
 
     for i = 1, #lines, 1 do
       assert.are_equal(str.trim(expected_join[i]), str.trim(lines[i]))

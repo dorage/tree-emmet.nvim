@@ -182,7 +182,43 @@ M.split_join_tag = function()
 end
 
 -- https://docs.emmet.io/actions/remove-tag/
-M.remove_tag = function() end
+M.remove_tag = function()
+  local element_node = module.get_element_node()
+  if element_node == nil then
+    return
+  end
+
+  local start_row, start_col, end_row, end_col = element_node:range()
+  local lines = vim.api.nvim_buf_get_lines(0, start_row, end_row + 1, false)
+
+  -- self closing element
+  if element_node:type() == "jsx_self_closing_element" then
+    str.remove_ranges(lines, { { 1, start_col + 1, end_row - start_row + 1, end_col } })
+    return
+  end
+
+  local opening_start_row, opening_start_col, opening_end_row, opening_end_col =
+    module.get_opening_element(element_node):range()
+  local closing_start_row, closing_start_col, closing_end_row, closing_end_col =
+    module.get_closing_element(element_node):range()
+
+  lines = str.remove_ranges(lines, {
+    {
+      opening_start_row - start_row + 1,
+      opening_start_col + 1,
+      (opening_start_row - start_row + 1) + (opening_end_row - start_row),
+      opening_end_col,
+    },
+    {
+      closing_start_row - start_row + 1,
+      closing_start_col + 1,
+      (closing_start_row - start_row + 1) + (closing_end_row - start_row),
+      closing_end_col,
+    },
+  })
+
+  vim.api.nvim_buf_set_lines(0, start_row, end_row + 1, false, lines)
+end
 
 -- Merge Lines
 -- https://docs.emmet.io/actions/merge-lines/
