@@ -135,22 +135,54 @@ end
 -- Split/Join Tag
 -- https://docs.emmet.io/actions/split-join-tag/
 --
+
+---comment
+---@param element_node TSNode
+local function get_tagname(element_node)
+  local start_row, start_col, end_row, end_col = element_node:child(1):child(1):range()
+  local line = vim.api.nvim_buf_get_lines(0, start_row, end_row + 1, false)[1]
+  local tagname = string.sub(line, start_col, end_col + 1)
+  return tagname
+end
+
 M.split_join_tag = function()
   local element_node = module.get_element_node()
   if element_node == nil then
     return
   end
 
+  -- split
   if element_node:type() == "jsx_self_closing_element" then
+    local tagname = get_tagname(element_node)
+    local start_row, start_col, end_row, end_col = element_node:range()
+    local lines = vim.api.nvim_buf_get_lines(0, start_row, end_row + 1, false)
+    lines[#lines] = string.sub(lines[#lines], 0, end_col - 2):gsub("%s+$", "")
+      .. "></"
+      .. tagname
+      .. ">"
+      .. string.sub(lines[#lines], end_col + 1)
 
-    -- split
-    -- remove /
-    -- add closing tag
+    vim.api.nvim_buf_set_lines(0, start_row, end_row + 1, false, lines)
+  -- join
   elseif element_node:type() == "jsx_element" then
+    local start_row, start_col, end_row, end_col = element_node:range()
+    local lines = vim.api.nvim_buf_get_lines(0, start_row, end_row + 1, false)
 
-    -- join
-    -- remove except opening element
-    -- add /
+    -- opening element range
+    local _, _, opening_end_row, opening_end_col = element_node:child(0):range()
+
+    local delete_start_row = opening_end_row - start_row + 1
+    lines = str.remove_ranges(lines, {
+      {
+        delete_start_row,
+        opening_end_col + 1,
+        delete_start_row + (end_row - opening_end_row),
+        end_col,
+      },
+    })
+
+    lines[#lines] = lines[#lines]:sub(0, opening_end_col - 1) .. " />" .. lines[#lines]:sub(opening_end_col + 1)
+    vim.api.nvim_buf_set_lines(0, start_row, end_row + 1, false, lines)
   end
 end
 

@@ -37,7 +37,6 @@ M.remove_ranges = function(lines, ranges)
     :totable()
 
   for _, range in ipairs(ranges) do
-    print(vim.inspect(results))
     local start_row, start_col, end_row, end_col = unpack(range)
 
     for curr_row, line in ipairs(results) do
@@ -72,7 +71,6 @@ M.remove_ranges = function(lines, ranges)
 
         new_line[curr_col] = char
       end
-      -- print(vim.inspect(new_line))
       results[curr_row] = new_line
     end
   end
