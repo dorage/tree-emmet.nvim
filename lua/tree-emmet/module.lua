@@ -68,7 +68,6 @@ M.get_opening_element = function(element_node)
   end
 
   for i = 0, element_node:child_count() do
-    print(element_node:child(i):type())
     if element_node:child(i):type() == "jsx_opening_element" then
       return element_node:child(i)
     end
