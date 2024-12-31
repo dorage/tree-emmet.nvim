@@ -45,7 +45,7 @@ local M = {}
 M.get_element_node = function()
   local curr_node = vim.treesitter.get_node()
   if curr_node == nil then
-    debug("the cursor is not hovering any element node")
+    print("the cursor is not hovering any element node")
     return nil
   end
 
@@ -63,7 +63,7 @@ end
 ---@return TSNode?
 M.get_opening_element = function(element_node)
   if element_node:type() == "jsx_self_closing_element" then
-    debug("it is self closing element")
+    print("it is self closing element")
     return
   end
 
@@ -81,7 +81,7 @@ end
 ---@return TSNode?
 M.get_closing_element = function(element_node)
   if element_node:type() == "jsx_self_closing_element" then
-    debug("it is self closing element")
+    print("it is self closing element")
     return
   end
 
@@ -106,14 +106,14 @@ M.get_identifier = function(element_node)
   end
 
   if opening_element == nil then
-    debug("cannot find opening element node or self closing element node")
+    print("cannot find opening element node or self closing element node")
     return nil
   end
 
   local identifier_node = opening_element:child(1):child(1)
 
   if identifier_node == nil then
-    debug("cannot find identifier node")
+    print("cannot find identifier node")
     return nil
   end
 
