@@ -19,7 +19,9 @@ re-implemenation of emmet for neovim with Tree-sitter
 - [-] Split/Join Tag
     - [v] jsx
     - [ ] html
-- [ ] Remove Tag
+- [-] Remove Tag
+    - [v] jsx
+    - [ ] html
 - [-] Merge Lines
     - [v] jsx
     - [ ] html
