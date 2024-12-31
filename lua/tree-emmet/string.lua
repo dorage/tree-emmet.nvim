@@ -82,8 +82,9 @@ M.remove_ranges = function(lines, ranges)
     local new_line = table.concat(line, "")
     if M.trim(new_line) == "" then
       new_lines[curr_row] = nil
+    else
+      new_lines[curr_row] = new_line
     end
-    new_lines[curr_row] = new_line
   end
 
   return new_lines
